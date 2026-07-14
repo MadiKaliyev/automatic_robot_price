@@ -1,0 +1,555 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>{{ seo_title }}</title>
+
+    <meta name="description" content="{{ seo_description }}">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#0c8290">
+
+    <link rel="canonical" href="{{ seo_canonical_url }}">
+    <link rel="icon" href="{% static 'pricing/favicon.svg' %}" type="image/svg+xml">
+    <link
+        rel="preload"
+        href="{% static 'pricing/images/island-1.jpg' %}"
+        as="image"
+        fetchpriority="high"
+    >
+
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:site_name" content="Island Price Monitor">
+    <meta property="og:title" content="{{ seo_title }}">
+    <meta property="og:description" content="{{ seo_description }}">
+    <meta property="og:url" content="{{ seo_canonical_url }}">
+    <meta property="og:image" content="{{ seo_image_url }}">
+    <meta property="og:image:alt" content="Отели Сейшельских островов">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ seo_title }}">
+    <meta name="twitter:description" content="{{ seo_description }}">
+    <meta name="twitter:image" content="{{ seo_image_url }}">
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Island Price Monitor",
+            "description": "{{ seo_description|escapejs }}",
+            "url": "{{ seo_canonical_url|escapejs }}",
+            "image": "{{ seo_image_url|escapejs }}",
+            "applicationCategory": "TravelApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ru"
+        }
+    </script>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'pricing/dashboard.css' %}"
+    >
+</head>
+
+<body>
+<div class="page-shell">
+
+    <header class="hero">
+        <div class="hero-inner">
+
+            <div class="hero-top">
+                <div class="brand">
+                    <span class="brand-mark">
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.7"
+                        >
+                            <path
+                                d="M12 21c4-4.5 7-8.1 7-12a7 7 0 1 0-14 0c0 3.9 3 7.5 7 12Z"
+                            />
+                            <circle cx="12" cy="9" r="2.3"/>
+                        </svg>
+                    </span>
+
+                    <span>
+                        ISLAND PRICE MONITOR
+                    </span>
+                </div>
+
+                {% if current_run %}
+                    <div class="hero-actions">
+                        <a
+                            class="button button-primary"
+                            href="{% url 'pricing:download_excel' current_run.id %}"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path d="M12 3v12"/>
+                                <path d="m7 10 5 5 5-5"/>
+                                <path d="M5 21h14"/>
+                            </svg>
+
+                            Скачать Excel
+                        </a>
+
+                        <a
+                            class="button button-primary"
+                            href="{% url 'pricing:download_pdf' current_run.id %}"
+                        >
+                            Скачать PDF
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="hero-content">
+                <div class="hero-kicker">
+                    Сейшелы · мониторинг туроператоров
+                </div>
+
+                <h1>
+                    Лучшие цены на отдых среди островов
+                </h1>
+
+                <p class="hero-description">
+                    Система сопоставляет одинаковые отели,
+                    номера и условия проживания, чтобы быстро
+                    определить самое выгодное предложение.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    {% if current_run %}
+        <section class="stats">
+
+            <div class="stat-card">
+                <div class="stat-label">
+                    Найдено сравнений
+                </div>
+
+                <div class="stat-value">
+                    {{ total_groups }}
+                </div>
+
+                <div class="stat-note">
+                    Полностью совпадающие параметры
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">
+                    Побед «Мальдивианы»
+                </div>
+
+                <div class="stat-value">
+                    {{ maldiviana_wins }}
+                </div>
+
+                <div class="stat-note">
+                    Минимальная цена среди источников
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">
+                    Максимальная экономия
+                </div>
+
+                <div class="stat-value">
+                    {{ maximum_saving|floatformat:2 }}
+                    EUR
+                </div>
+
+                <div class="stat-note">
+                    Экономия на одном бронировании
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">
+                    Максимальная разница
+                </div>
+
+                <div class="stat-value">
+                    {{ maximum_percent|floatformat:2 }}%
+                </div>
+
+                <div class="stat-note">
+                    Между одинаковыми предложениями
+                </div>
+            </div>
+
+        </section>
+    {% endif %}
+
+    <div class="main-layout">
+
+        <aside class="panel history-panel">
+
+            <div class="history-cover">
+                <small>
+                    Архив мониторинга
+                </small>
+
+                <h2>
+                    История сравнений
+                </h2>
+            </div>
+
+            <div class="history-list">
+                {% for history_item in history %}
+
+                    <a
+                        class="history-item
+                        {% if current_run and current_run.id == history_item.run.id %}
+                            active
+                        {% endif %}"
+                        href="?run={{ history_item.run.id }}"
+                    >
+                        <div class="history-title">
+                            <span>
+                                Запуск №{{ history_item.run.id }}
+                            </span>
+
+                            <span class="history-badge">
+                                {{ history_item.group_count }}
+                            </span>
+                        </div>
+
+                        <div class="history-meta">
+                            {{ history_item.run.started_at|date:"d.m.Y H:i" }}
+                            <br>
+
+                            {% if history_item.run.scenario %}
+                                {{ history_item.run.scenario.nights }}
+                                ночей ·
+
+                                {{ history_item.run.scenario.adults }}
+                                взрослых
+                            {% endif %}
+                        </div>
+                    </a>
+
+                {% empty %}
+                    <div class="history-meta">
+                        История пока отсутствует.
+                    </div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <main class="content-area">
+
+            {% if current_run %}
+
+                <div class="section-heading">
+                    <div>
+                        <small>
+                            Результаты мониторинга
+                        </small>
+
+                        <h2>
+                            Подходящие предложения
+                        </h2>
+                    </div>
+
+                    <div class="section-meta">
+                        Запуск №{{ current_run.id }}
+
+                        {% if current_run.scenario %}
+                            ·
+                            {{ current_run.scenario.check_in|date:"d.m.Y" }}
+                            ·
+                            {{ current_run.scenario.nights }}
+                            ночей
+                        {% endif %}
+                    </div>
+                </div>
+
+                <section class="hotel-grid">
+
+                    {% for group in groups %}
+                        <article class="hotel-card">
+
+                            <div class="hotel-photo {% if not group.hotel.image %}hotel-photo-fallback{% endif %}">
+                                {% if group.hotel.image %}
+                                    <img
+                                        class="hotel-photo-image"
+                                        src="{{ group.hotel.image.url }}"
+                                        alt="{{ group.hotel.canonical_name }} — отель на Сейшелах"
+                                        width="580"
+                                        height="660"
+                                        decoding="async"
+                                        {% if forloop.first %}
+                                            fetchpriority="high"
+                                        {% else %}
+                                            loading="lazy"
+                                        {% endif %}
+                                    >
+                                {% endif %}
+                                <span class="hotel-number">
+                                    {{ forloop.counter|stringformat:"02d" }}
+                                </span>
+
+                                <div class="photo-caption">
+                                    <small>
+                                        Seychelles
+                                    </small>
+
+                                    <strong>
+                                        Остров Маэ
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="hotel-body">
+
+                                <div class="hotel-head">
+                                    <div>
+                                        <div class="hotel-kicker">
+                                            Отель и категория номера
+                                        </div>
+
+                                        <h3 class="hotel-title">
+                                            {{ group.hotel.canonical_name }}
+                                        </h3>
+
+                                        <p class="room-title">
+                                            {{ group.room_category.canonical_name }}
+                                        </p>
+                                    </div>
+
+                                    <div class="best-badge">
+                                        <div class="best-badge-label">
+                                            Лучшая цена
+                                        </div>
+
+                                        <div class="best-badge-source">
+                                            {{ group.best_offer.source.name }}
+                                        </div>
+
+                                        <div class="best-badge-price">
+                                            {{ group.best_price|floatformat:2 }}
+                                            {{ group.currency }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="hotel-details">
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Заезд
+                                        </span>
+
+                                        <span class="detail-value">
+                                            {{ group.check_in|date:"d.m.Y" }}
+                                        </span>
+                                    </div>
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Ночей
+                                        </span>
+
+                                        <span class="detail-value">
+                                            {{ group.nights }}
+                                        </span>
+                                    </div>
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Взрослые
+                                        </span>
+
+                                        <span class="detail-value">
+                                            {{ group.adults }}
+                                        </span>
+                                    </div>
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Дети
+                                        </span>
+
+                                        <span class="detail-value">
+                                            {% if group.children_ages %}
+                                                {{ group.children_ages|join:", " }}
+                                            {% else %}
+                                                Нет
+                                            {% endif %}
+                                        </span>
+                                    </div>
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Питание
+                                        </span>
+
+                                        <span class="detail-value">
+                                            {{ group.meal_plan.code }}
+
+                                            {% if group.meal_plan.name %}
+                                                · {{ group.meal_plan.name }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Трансфер
+                                        </span>
+
+                                        <span class="detail-value">
+                                            {% if group.transfer_included %}
+                                                Включён
+                                            {% else %}
+                                                Не включён
+                                            {% endif %}
+                                        </span>
+                                    </div>
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Налоги
+                                        </span>
+
+                                        <span class="detail-value">
+                                            {% if group.taxes_included %}
+                                                Включены
+                                            {% else %}
+                                                Не включены
+                                            {% endif %}
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                                <div class="offers-title">
+                                    Цены туроператоров
+                                </div>
+
+                                <div class="offers-grid">
+
+                                    {% for item in group.dashboard_items %}
+                                        <div class="offer-column">
+
+                                            <div class="offer-card {{ item.color_status }}">
+
+                                                <div class="offer-top">
+                                                    <div class="offer-source">
+                                                        {{ item.offer.source.name }}
+                                                    </div>
+
+                                                    {% if item.is_best %}
+                                                        <div class="offer-best-label">
+                                                            Лучшая цена
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+
+                                                <div class="offer-price">
+                                                    {{ item.offer.price|floatformat:2 }}
+                                                    {{ item.offer.currency }}
+                                                </div>
+
+                                                <div class="offer-components">
+                                                    {{ item.price_components_text }}
+                                                </div>
+
+                                                {% if not item.is_best %}
+                                                    <div class="offer-difference">
+                                                        Дороже на
+                                                        {{ item.absolute_difference|floatformat:2 }}
+                                                        {{ item.offer.currency }}
+                                                        ·
+                                                        {{ item.percent_difference|floatformat:2 }}%
+                                                    </div>
+                                                {% else %}
+                                                    <div class="offer-difference">
+                                                        Самое выгодное предложение
+                                                    </div>
+                                                {% endif %}
+
+                                            </div>
+
+                                            {% if item.offer.offer_url %}
+                                                <a
+                                                    class="offer-card-link"
+                                                    href="{{ item.offer.offer_url }}"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    Открыть предложение
+                                                    <span>→</span>
+                                                </a>
+                                            {% endif %}
+
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+
+                                <div class="hotel-footer">
+
+                                    <div class="saving">
+                                        Возможная экономия:
+                                        <strong>
+                                            {{ group.maximum_difference|floatformat:2 }}
+                                            {{ group.currency }}
+                                        </strong>
+                                    </div>
+
+                                    {% if group.best_offer.offer_url %}
+                                        <a
+                                            class="offer-link"
+                                            href="{{ group.best_offer.offer_url }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Открыть предложение
+                                            <span>→</span>
+                                        </a>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+
+                </section>
+
+            {% else %}
+
+                <section class="panel empty-state">
+                    <h2>
+                        Сравнений пока нет
+                    </h2>
+
+                    <p>
+                        После запуска сбора здесь появятся
+                        предложения туроператоров.
+                    </p>
+                </section>
+
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+</body>
+</html>
