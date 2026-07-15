@@ -99,13 +99,23 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "hotel-price-monitor",
-        "TIMEOUT": 60,
+CACHE_URL = os.getenv("CACHE_URL")
+if CACHE_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": CACHE_URL,
+            "TIMEOUT": 60,
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "hotel-price-monitor",
+            "TIMEOUT": 60,
+        }
+    }
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
@@ -134,18 +144,17 @@ CELERY_RESULT_BACKEND = os.getenv(
     CELERY_BROKER_URL,
 )
 CELERY_TIMEZONE = TIME_ZONE
+MONITORING_INTERVAL_MINUTES = int(os.getenv("MONITORING_INTERVAL_MINUTES", "5"))
+MONITORING_LOCK_TIMEOUT_SECONDS = int(
+    os.getenv("MONITORING_LOCK_TIMEOUT_SECONDS", "3300")
+)
 CELERY_BEAT_SCHEDULE = {
     "scheduled-hotel-price-monitoring": {
         "task": "apps.pricing.tasks.run_scheduled_monitoring",
-        "schedule": (
-            int(
-                os.getenv(
-                    "MONITORING_INTERVAL_MINUTES",
-                    "60",
-                )
-            )
-            * 60
-        ),
+        "schedule": MONITORING_INTERVAL_MINUTES * 60,
+        "options": {
+            "expires": max(60, MONITORING_INTERVAL_MINUTES * 60 - 5),
+        },
     },
 }
 
@@ -169,3 +178,23 @@ LOGGING = {
         "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
     },
 }
+
+
+# Temporary Cloudflare Tunnel access
+ALLOWED_HOSTS = list(
+    dict.fromkeys(
+        [
+            *ALLOWED_HOSTS,
+            ".trycloudflare.com",
+        ]
+    )
+)
+
+CSRF_TRUSTED_ORIGINS = list(
+    dict.fromkeys(
+        [
+            *globals().get("CSRF_TRUSTED_ORIGINS", []),
+            "https://*.trycloudflare.com",
+        ]
+    )
+)

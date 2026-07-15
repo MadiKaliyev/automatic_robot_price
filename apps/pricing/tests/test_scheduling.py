@@ -41,3 +41,23 @@ class ScheduledMonitoringTests(TestCase):
             trigger="scheduled",
             skip_bonus=False,
         )
+
+    @patch("apps.pricing.tasks.cache.add", return_value=False)
+    @patch("apps.pricing.tasks.call_command")
+    def test_skips_cycle_when_previous_one_is_running(
+        self,
+        mocked_call_command,
+        mocked_cache_add,
+    ):
+        result = run_scheduled_monitoring.run()
+
+        self.assertEqual(
+            result,
+            {
+                "completed": [],
+                "failures": [],
+                "skipped": "previous monitoring cycle is still running",
+            },
+        )
+        mocked_cache_add.assert_called_once()
+        mocked_call_command.assert_not_called()

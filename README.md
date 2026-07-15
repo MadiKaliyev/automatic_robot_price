@@ -57,7 +57,7 @@ celery -A tour_monitor worker -l info -P solo
 celery -A tour_monitor beat -l info
 ```
 
-Период задаётся переменной `MONITORING_INTERVAL_MINUTES` (60 минут по умолчанию).
+Период задаётся переменной `MONITORING_INTERVAL_MINUTES` (5 минут по умолчанию). Распределённая блокировка через Redis не позволяет запустить второй цикл, пока предыдущий ещё выполняется.
 
 ## Проверка качества
 
